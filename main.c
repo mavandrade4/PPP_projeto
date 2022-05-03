@@ -12,13 +12,14 @@ int main(){
   StudentsList students;
   ExpenseList expenses;
   // cria lista de alunos e vai buscar alunos ao ficheiro
-  readFile(&students, 0);
-  readFile(&expenses, 1);
+  readFileStudents(&students);
+  readFileExpenses(&students, &expenses);
 
   while(1){
     int choice = -1, id = -1;
     printf("======= MENU =======\n1.New student\n2.Delete student\n3.List students\n4.List students (filtered)\n5.See student\n6.New expense\n7.Update student balance\n0.Exit\n=====================\n");
-    scanf("Option: %d", &choice);
+    printf("Option: ");
+    scanf("%d", &choice);
     switch(choice){
       // Introduzir dados de um novo aluno.
       case 1:
@@ -73,12 +74,18 @@ int main(){
       // Efetuar uma despesa por um determinado aluno.
       case 6:
         ;
-        int exp = 0;
+        Date date;
+        char desc[MAX_LINE];
+        float exp = 0.0;
         printf("Insert student's ID: ");
         scanf("%d", &id);
         printf("Insert amount: ");
-        scanf("%d", &exp);
-        student_expense(&students, id, exp);
+        scanf("%f", &exp);
+        printf("Insert description: ");
+        scanf("%s", desc);
+        printf("Insert date: ");
+        scanf("%d/%d/%d", &date.day, &date.month, &date.year);
+        student_expense(&students, &expenses, id, exp, desc, date);
         break;
       // Carregar a conta de um aluno com um valor.
       case 7:
@@ -92,13 +99,14 @@ int main(){
         break;
       case 0:
         // atualizar ficheiro
-        if(writeFile(&students, 0) && writeFile(&expenses, 1)){
+        if(writeFileStudents(&students) && writeFileExpenses(&expenses)){
           printf("Exiting...\n");
         }else{
           printf("Error writing to file\n");
         }
         // apagar Lista
-        delete_list(&students, &expenses);
+        // delete_list(&students);
+        // delete_list(&expenses);
         // fechar
         return 0;
       default:
@@ -108,7 +116,7 @@ int main(){
     //printf("TOU?");
   }
   // atualizar ficheiro
-  if(writeFile(&students)){
+  if(writeFileStudents(&students)){
     printf("Exiting...\n");
   }else{
     printf("Error writing to file\n");

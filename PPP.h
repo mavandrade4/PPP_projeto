@@ -39,7 +39,7 @@ typedef struct noStudent{
   struct noStudent *next;
 }noStudent;
 
-typedef struct list{
+typedef struct studentList{
   noStudent *first;
 }StudentsList;
 
@@ -57,7 +57,7 @@ typedef struct noExpense{
   struct noExpense *next;
 }noExpense;
 
-typedef struct list{
+typedef struct expenseList{
   noExpense *first;
 }ExpenseList;
 
@@ -65,20 +65,21 @@ typedef struct list{
 FILE *fptr;
 //////////////////////// INICIALIZACOES ////////////////////////
 // para o menu
-void new_student(StudentsList *list, char name[], Date nasc, int year, int class, int num, int balance);
+void new_student(StudentsList *list, char name[], Date nasc, int year, int class, int num, float balance);
 void delete_student(StudentsList *list, int num);
 void list_student_alpha(StudentsList *list);
-void list_student_filter(StudentsList *list, int balance);
+void list_student_filter(StudentsList *list, float balance);
 void list_student_details(StudentsList *list, int num);
-void student_expense(StudentsList *list, ExpenseList *expenses, int num, float exp, char desc, Date date);
-void student_update_balance(StudentsList *list, int num, int amount);
+void student_expense(StudentsList *list, ExpenseList *expenses, int num, float exp, char desc[], Date date);
+void student_update_balance(StudentsList *list, int num, float amount);
 // auxiliares
 void string_toupper(char str[]);
 void sortStudents(Student array[], int size);
-void findStudent(StudentsList * list, int num, );
+Student findStudent(StudentsList * list, int num);
 void delete_list(StudentsList* list);
 void print_list(StudentsList * list);
 // ficheiros
-void readFile(StudentsList *list, int type);
-int writeFile(StudentsList *list, int type);
+void readFile(StudentsList *list);
+void readFileExpenses(StudentsList* stuList, ExpenseList *list);
+int writeFile(StudentsList *list);
 #endif
