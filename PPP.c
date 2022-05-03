@@ -1,0 +1,223 @@
+/*
+Principios de Programacao Procedimental
+Mariana Aveleira Andrade
+2017249648
+*/
+
+#include "PPP.h"
+
+//////////////////////// FUNCOES ////////////////////////
+/////////// FICHEIROS ///////////
+void readFile(StudentsList *list){
+  // ler ficheiro
+  fptr = fopen("users.txt","r");
+  if(!fptr){ // se nao encontrar ficheiro inicializa a lista a NULL
+    list->first = NULL;
+    //printf("Criei lista vazia de alunos\n");
+  }else{
+    char buffer[MAX_LINE];
+    while(fgets(buffer, MAX_LINE, fptr)){
+      ///// ler linha do ficheiro
+      // cria aluno
+      Student *new = (Student *) malloc (sizeof(Student));
+      char name[MAX];
+      if(sscanf(buffer, "%s,%d-%d-%d,%d,%d,%d,%d", name, &new->nasc.day, &new->nasc.month, &new->nasc.year, &new->year, &new->class, &new->num, &new->balance) == 8){
+        string_toupper(name);
+        strcpy  (new->name, name);
+        ///// adicionar a lista
+        // cria o aluno para acrescentar à lista
+        noStudent *aux;
+        aux = (noStudent *) malloc (sizeof (noStudent));
+        noStudent *act = list->first;
+        if(aux){
+          aux->user = *new;
+          aux->next = NULL;
+          //adicionar aluno à lista de alunos
+          act = aux;
+          act->next = NULL;
+        }
+        act = act->next;
+        }
+      }
+      //printf("Criei lista de alunos a partir do ficheiro\n");
+  }
+  fclose(fptr);
+}
+
+int writeFile(StudentsList *list){
+  // atualiza ficheiro
+  fptr = fopen("users.txt","w");
+  if(!list->first){
+    fclose(fptr);
+    return 1;
+  }else{
+    noStudent *act = list->first;
+    while(act){ // percorre a lista de alunos
+      if(fwrite(&act, sizeof(Student), 1, fptr) == 0){
+        return 0;
+      }
+      free(act);
+    }
+    fclose(fptr);
+    return 1;
+  }
+}
+/////////// MENU ///////////
+void new_student(StudentsList *list, char name[], Date nasc, int year, int class, int num, int balance){
+  // cria aluno
+  Student new;
+  string_toupper(name);
+  strcpy(new.name, name);
+  new.nasc = nasc;
+  new.year = year;
+  new.class = class;
+  new.num = num;
+  new.balance = balance;
+  printf("Criei campos\n");
+  // cria no aluno para acrescentar à lista
+  noStudent *aux;
+  aux = (noStudent *) malloc (sizeof (noStudent));
+  noStudent *act = list->first;
+
+  printf("Criei aux\n");
+  if(aux){
+    printf("if aux\n");
+    aux->user = new;
+    aux->next = NULL;
+    printf("pus new no aux\n");
+    //adicionar aluno à lista de alunos
+    if(act == NULL){ // se ainda nao houver nenhum aluno
+      printf("act == NULL\n");
+      list->first = aux;
+      list->first->next = NULL;
+      //print_list(list);
+    }else{ // se ja existir, inserir por ordem alfabetica
+      printf("else\n");
+      while(act){
+        printf("while act\n");
+        if(strcmp(act->next->user.name, new.name) > 0){ // encontra o lugar certo na lista
+          printf("encontrar sitio certo\n");
+          aux->next = act->next;
+          act->next = aux;
+        }
+        act = act->next;
+      }
+    }
+  }
+}
+void delete_student(StudentsList *list, int num){
+  noStudent *act, *ant;
+  findStudent(list, num, &ant, &act);
+  if(act != NULL){
+    ant.next = act.next;
+    free(act);
+  }
+}
+void list_student_alpha(StudentsList *list){
+  noStudent *usr = list->first;
+  while(usr){
+    printf("Name: %s\tID: %d\n", usr->user.name, usr->user.num);
+    usr = usr->next;
+  }
+}
+void list_student_filter(StudentsList *list, int balance){
+  noStudent *usr = list->first;
+  Student users[MAX_ARRAY];
+  int i = 0;
+  while(usr){
+    if(usr->user.balance < balance){
+      users[i] = usr->user;
+      i++;
+    }
+    usr = usr->next;
+  }
+  // ordena e imprime ordenado
+  sortStudents(users, (i-1));
+}
+void list_student_details(StudentsList *list, int num){
+  Student aux = findStudent(&(*list), num);
+  if(aux.num != -1){
+    printf("Name: %s\nBirthdate: %d-%d-%d\nYear: %d\nClass: %d\nID: %d\nBalance: %d\n",aux.name, aux.nasc.day, aux.nasc.month, aux.nasc.year, aux.year, aux.class, aux.num, aux.balance);
+  }else{
+    printf("User not found\n");
+  }
+}
+void student_expense(StudentsList *list, ExpenseList *expenses, int num, float exp, char desc, Date date){
+  Student aux = findStudent(&(*list), num);
+  // atualizar saldo do user
+  aux.balance -= exp;
+
+  //criar despesa
+  Expense new_exp;
+  new_exp.user = aux;
+  new_exp.amount = exp;
+  strcpy(new_exp.desc, desc);
+  new_exp.date = date;
+  noExpense * new = (noExpense*) malloc (sizeof (noExpense));
+
+
+  //adicionar despesa a lista de despesas
+  if(new){
+    new->info = new_exp;
+    new->next = list->first->next;
+    list->first = new;
+  }
+
+}
+void student_update_balance(StudentsList *list, int num, int amount){
+  Student aux = findStudent(&(*list), num);
+  if(aux.num != -1){
+  aux.balance += amount;
+  }else{
+    printf("User not found\n");
+  }
+}
+
+/////////// AUXILIARES ///////////
+void string_toupper(char str[]){
+    for(int i = 0; i < ((int)strlen(str)); i++){
+      str[i] = toupper(str[i]);
+    }
+}
+void sortStudents(Student array[], int size){
+  noStudent* aux = (noStudent*) malloc (sizeof (noStudent));
+  for(int i = 0; i < size; i++){
+      for(int j = i+1; j < size; j++){
+        if((array[i]).balance < (array[j]).balance){
+          aux->user = array[i];
+          array[i] = array[j];
+          array[j] = aux->user;
+        }
+      }
+  }
+  for(int i = 0; i < size; i++){
+    printf("Name: %s\tBalance: %d\n", (array[i]).name, (array[i]).balance);
+  }
+}
+void findStudent(StudentsList * list, int num, noStudent *ant, noStudent *act){
+  /*ant = list->first;
+  act = list->first->next;
+
+  while(act){
+    if(act->user.num == num){
+      return;
+    }
+    act = act->next;
+    ant = ant->next;
+  }*/
+}
+void delete_list(StudentsList* list){
+  noStudent * aux;
+  while(list->first != NULL){
+    aux = list->first;
+    list->first = list->first->next;
+    free(aux);
+  }
+}
+void print_list(StudentsList* list){
+  noStudent * aux = list->first;
+  while(aux != NULL){
+    printf("Name: %s\tBirthdate: %d-%d-%d\tYear: %d\tClass: %d\tID: %d\tBalance: %d\n",aux->user.name, aux->user.nasc.day, aux->user.nasc.month, aux->user.nasc.year, aux->user.year, aux->user.class, aux->user.num, aux->user.balance);
+    aux = aux->next;
+  }
+}
